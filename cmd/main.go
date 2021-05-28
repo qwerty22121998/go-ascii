@@ -2,47 +2,27 @@ package main
 
 import (
 	"github.com/qwerty22121998/go-ascii/service"
-	"gocv.io/x/gocv"
 	"os"
 )
 
-const ImgName = "img.jpg"
+const ImgName = "banh.jpg"
 
 func main() {
-	url := "https://media-cdn.laodong.vn/Storage/NewsPortal/2019/4/2/666434/11.jpg"
-	_, err := service.Download(url, ImgName)
-	if err != nil {
-		panic(err)
-	}
-	img := gocv.IMRead(ImgName, gocv.IMReadColor)
-	win := gocv.NewWindow("image")
+	c := service.Ascii(150)
 
-	win.IMShow(img)
+	file, _ := os.Open("banh.jpg")
+	defer file.Close()
 
-	con := service.DefaultConverter()
+	out, _ := os.Create("out.png")
+	defer out.Close()
 
-	res := con.ToASCII(img, 50)
+	img, _ := c.Load(file)
 
-	file, _ := os.Create("out.txt")
+	gray := c.ToGray(img)
 
-	for _, l := range res {
-		//fmt.Println(string(l))
-		file.WriteString(string(l) + "\n")
-	}
+	r := c.ToRune(gray)
 
-	file.Close()
+	as := c.ToImage(r)
 
-	out := con.Render(res)
-
-	win.IMShow(out)
-
-	gocv.IMWrite("banh.jpg", out)
-	for {
-		win.WaitKey(0)
-	}
-
-	//
-	//
-	//win.IMShow(img)
-	//win.WaitKey(0)
+	c.Write(as,out)
 }
