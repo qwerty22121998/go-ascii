@@ -9,17 +9,19 @@ import (
 const ImgName = "img.jpg"
 
 func main() {
-	url := "https://ca.slack-edge.com/TBFDUP13L-U01NDR1SKL2-36b20d2cb483-512"
+	url := "https://media-cdn.laodong.vn/Storage/NewsPortal/2019/4/2/666434/11.jpg"
 	_, err := service.Download(url, ImgName)
 	if err != nil {
 		panic(err)
 	}
 	img := gocv.IMRead(ImgName, gocv.IMReadColor)
-	//win := gocv.NewWindow("image")
+	win := gocv.NewWindow("image")
 
-	con := service.Converter{}
+	win.IMShow(img)
 
-	res := con.Convert(img)
+	con := service.DefaultConverter()
+
+	res := con.ToASCII(img, 50)
 
 	file, _ := os.Create("out.txt")
 
@@ -30,8 +32,14 @@ func main() {
 
 	file.Close()
 
-	//win.IMShow(con.Convert(img))
-	//win.WaitKey(0)
+	out := con.Render(res)
+
+	win.IMShow(out)
+
+	gocv.IMWrite("banh.jpg", out)
+	for {
+		win.WaitKey(0)
+	}
 
 	//
 	//

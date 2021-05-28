@@ -4,13 +4,27 @@ import (
 	"fmt"
 	"gocv.io/x/gocv"
 	"image"
+	"image/color"
 	"math"
 )
 
 type Converter struct {
+	textColor     color.RGBA
+	textThickness int
+	textScale     float64
+	multiplier    int
 }
 
-var CharList = []rune(" .:-=+*#%@")
+var CharList = []rune(" .:-=+*#X@")
+
+func DefaultConverter() *Converter {
+	return &Converter{
+		textColor:     color.RGBA{R: 255, G: 255, B: 255},
+		textThickness: 3,
+		textScale:     1,
+		multiplier:    30,
+	}
+}
 
 func GetChar(value uint8) rune {
 	part := 255 / (len(CharList) - 1)
@@ -18,17 +32,28 @@ func GetChar(value uint8) rune {
 	return CharList[idx]
 }
 
-func GetScale(mat gocv.Mat, maxSize int) float64 {
-	return 1.0 / math.Ceil(math.Max(float64(mat.Rows()/maxSize), float64(mat.Cols()/maxSize)))
+func getScale(mat gocv.Mat, maxSize int) float64 {
+	return math.Min(float64(maxSize)/float64(mat.Rows()), float64(maxSize)/float64(mat.Cols()))
 }
 
-func (c *Converter) Convert(img gocv.Mat) [][]rune {
+func (c *Converter) Render(img [][]rune) gocv.Mat {
+	h := len(img)
+	w := len(img[0])
+	mat := gocv.NewMatWithSize(h*c.multiplier, w*c.multiplier, gocv.MatTypeCV8UC3)
+	for y, l := range img {
+		for x, v := range l {
+			gocv.PutText(&mat, fmt.Sprintf("%c", v), image.Point{
+				X: x * c.multiplier,
+				Y: y * c.multiplier,
+			}, gocv.FontHersheyComplexSmall, c.textScale, color.RGBA{R: 255, G: 255, B: 255}, c.textThickness)
+		}
+	}
+	return mat
+}
 
-	scale := GetScale(img, 100)
-	fmt.Println("Scale ratio", scale)
+func (c *Converter) ToASCII(img gocv.Mat, maxSize int) [][]rune {
+	scale := getScale(img, maxSize)
 	gocv.Resize(img, &img, image.Point{}, scale, scale, gocv.InterpolationCubic)
-
-	fmt.Println(img.Rows(), img.Cols())
 
 	result := make([][]rune, img.Rows())
 
