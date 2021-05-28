@@ -9,7 +9,7 @@ import (
 const ImgName = "img.jpg"
 
 func main() {
-	url := "https://photo2.tinhte.vn/data/attachment-files/2021/03/5373730_Golang.png"
+	url := "https://ca.slack-edge.com/TBFDUP13L-U01NDR1SKL2-36b20d2cb483-512"
 	_, err := service.Download(url, ImgName)
 	if err != nil {
 		panic(err)
@@ -19,7 +19,7 @@ func main() {
 
 	con := service.Converter{}
 
-	res := con.Convert(img, 0.1)
+	res := con.Convert(img)
 
 	file, _ := os.Create("out.txt")
 

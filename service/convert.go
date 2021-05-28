@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"gocv.io/x/gocv"
 	"image"
+	"math"
 )
 
 type Converter struct {
 }
 
-var CharList = []rune("@%#*+=-:. ")
-
-
+var CharList = []rune(" .:-=+*#%@")
 
 func GetChar(value uint8) rune {
 	part := 255 / (len(CharList) - 1)
@@ -19,8 +18,14 @@ func GetChar(value uint8) rune {
 	return CharList[idx]
 }
 
-func (c *Converter) Convert(img gocv.Mat, scale float64) [][]rune {
+func GetScale(mat gocv.Mat, maxSize int) float64 {
+	return 1.0 / math.Ceil(math.Max(float64(mat.Rows()/maxSize), float64(mat.Cols()/maxSize)))
+}
 
+func (c *Converter) Convert(img gocv.Mat) [][]rune {
+
+	scale := GetScale(img, 100)
+	fmt.Println("Scale ratio", scale)
 	gocv.Resize(img, &img, image.Point{}, scale, scale, gocv.InterpolationCubic)
 
 	fmt.Println(img.Rows(), img.Cols())
