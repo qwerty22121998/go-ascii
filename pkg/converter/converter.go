@@ -12,29 +12,51 @@ import (
 	_ "image/jpeg"
 	"image/png"
 	_ "image/png"
+	"io"
 	"math"
 	"os"
 )
 
 type NativeConverter struct {
-	Char    []rune
-	MaxSize uint
-	font    font.Face
+	Char []rune
+	font font.Face
 }
 
-func Ascii(maxSize uint) *NativeConverter {
+func Ascii() *NativeConverter {
 	f := *inconsolata.Regular8x16
 	f.Left = 0
 	f.Advance = f.Ascent
 
 	return &NativeConverter{
-		Char:    []rune(` .:-=+*#%@`),
-		MaxSize: maxSize,
-		font:    &f,
+		Char: []rune(` .:-=+*#%@`),
+		font: &f,
 	}
 }
 
-func (c *NativeConverter) Load(file *os.File) (image.Image, error) {
+func (c *NativeConverter) ConvertToAscii(reader io.Reader, size uint) ([][]rune, error) {
+	img, err := c.Load(reader)
+	if err != nil {
+		return nil, err
+	}
+	gray := c.ToGray(img)
+
+	return c.ToRune(gray, size), nil
+}
+
+func (c *NativeConverter) ConvertToImage(reader io.Reader, size uint) (image.Image, error) {
+	img, err := c.Load(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	gray := c.ToGray(img)
+
+	r := c.ToRune(gray, size)
+
+	return c.ToImage(r), nil
+}
+
+func (c *NativeConverter) Load(file io.Reader) (image.Image, error) {
 	img, _, err := image.Decode(file)
 	if err != nil {
 		return nil, err
@@ -60,9 +82,12 @@ func (c *NativeConverter) getChar(value uint8) rune {
 }
 
 func (c *NativeConverter) ToImage(r [][]rune) image.Image {
-	metric := c.font.Metrics()
-	h := int(metric.Height) // c.font.Ascent + c.font.Descent
-	w := int(metric.Height)
+	//metric := c.font.Metrics()
+	factor := int(c.font.Metrics().Ascent >> 6)
+	h := factor * len(r)
+	w := factor * len(r[0])
+	//h := int(metric.Height) // c.font.Ascent + c.font.Descent
+	//w := int(metric.Height)
 
 	img := image.NewGray(image.Rect(0, 0, w, h))
 	fmt.Println(img.Rect)
@@ -86,8 +111,8 @@ func (c *NativeConverter) ToImage(r [][]rune) image.Image {
 
 }
 
-func (c *NativeConverter) ToRune(img *image.Gray) [][]rune {
-	img = resize.Thumbnail(c.MaxSize, c.MaxSize, img, resize.NearestNeighbor).(*image.Gray)
+func (c *NativeConverter) ToRune(img *image.Gray, size uint) [][]rune {
+	img = resize.Thumbnail(size, size, img, resize.NearestNeighbor).(*image.Gray)
 	bound := img.Bounds()
 
 	result := make([][]rune, bound.Dy())
