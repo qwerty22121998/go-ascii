@@ -1,14 +1,14 @@
 package main
 
 import (
-	"github.com/qwerty22121998/go-ascii/service"
+	"github.com/qwerty22121998/go-ascii/service/converter"
 	"os"
 )
 
 const ImgName = "banh.jpg"
 
 func main() {
-	c := service.Ascii(50)
+	c := converter.Ascii(50)
 
 	file, _ := os.Open("banh.jpg")
 	defer file.Close()
