@@ -8,7 +8,7 @@ import (
 const ImgName = "banh.jpg"
 
 func main() {
-	c := service.Ascii(150)
+	c := service.Ascii(50)
 
 	file, _ := os.Open("banh.jpg")
 	defer file.Close()

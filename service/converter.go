@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/nfnt/resize"
 	"golang.org/x/image/font"
-	"golang.org/x/image/font/basicfont"
+	"golang.org/x/image/font/inconsolata"
 	"golang.org/x/image/math/fixed"
 	"image"
 	"image/color"
@@ -19,13 +19,13 @@ import (
 type NativeConverter struct {
 	Char    []rune
 	MaxSize uint
-	font    *basicfont.Face
+	font    font.Face
 }
 
 func Ascii(maxSize uint) *NativeConverter {
-	f := *basicfont.Face7x13
+	f := *inconsolata.Regular8x16
 	f.Left = 0
-	f.Advance = 11
+	f.Advance = f.Ascent
 
 	return &NativeConverter{
 		Char:    []rune(` .:-=+*#%@`),
@@ -60,10 +60,11 @@ func (c *NativeConverter) getChar(value uint8) rune {
 }
 
 func (c *NativeConverter) ToImage(r [][]rune) image.Image {
-	h := c.font.Height - c.font.Descent // c.font.Ascent + c.font.Descent
-	w := c.font.Advance
+	metric := c.font.Metrics()
+	h := int(metric.Height) // c.font.Ascent + c.font.Descent
+	w := int(metric.Height)
 
-	img := image.NewGray(image.Rect(0, 0, len(r[0])*w, len(r)*h))
+	img := image.NewGray(image.Rect(0, 0, w, h))
 	fmt.Println(img.Rect)
 
 	drawer := &font.Drawer{
