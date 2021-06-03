@@ -6,6 +6,7 @@ import (
 	"github.com/qwerty22121998/go-ascii/controller"
 	"github.com/qwerty22121998/go-ascii/service"
 	"net/http"
+	"os"
 )
 
 type Server struct {
@@ -31,5 +32,5 @@ func (s *Server) Start() {
 	s.e.GET("/ping", func(c echo.Context) error {
 		return c.String(http.StatusOK, "pong")
 	})
-	s.e.Logger.Fatal(s.e.Start(":8080"))
+	s.e.Logger.Fatal(s.e.Start(":" + os.Getenv("PORT")))
 }
