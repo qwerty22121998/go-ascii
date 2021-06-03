@@ -1,5 +1,6 @@
 module github.com/qwerty22121998/go-ascii
 
+// +heroku goVersion go1.15
 go 1.15
 
 require (
